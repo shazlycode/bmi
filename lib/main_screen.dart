@@ -1,6 +1,8 @@
 import 'dart:math';
 
+import 'package:bmi/ad_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 
 class MainScreen extends StatefulWidget {
@@ -62,6 +64,61 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  BannerAd? _bannerAd;
+  bool _isLoaded = false;
+
+  /// Loads a banner ad.
+  void loadBannerAd() {
+    _bannerAd = BannerAd(
+      adUnitId: AdManager.bannerAdId,
+      request: const AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        // Called when an ad is successfully received.
+        onAdLoaded: (ad) {
+          debugPrint('$ad loaded.');
+          setState(() {
+            _isLoaded = true;
+          });
+        },
+        // Called when an ad request failed.
+        onAdFailedToLoad: (ad, err) {
+          debugPrint('BannerAd failed to load: $err');
+          // Dispose the ad here to free resources.
+          ad.dispose();
+        },
+      ),
+    )..load();
+  }
+
+  InterstitialAd? interstitialAd;
+
+  /// Loads an interstitial ad.
+  void loadInterstitialAd() {
+    InterstitialAd.load(
+        adUnitId: AdManager.interstitialAd,
+        request: const AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+          // Called when an ad is successfully received.
+          onAdLoaded: (ad) {
+            debugPrint('$ad loaded.');
+            // Keep a reference to the ad so you can show it later.
+            interstitialAd = ad;
+          },
+          // Called when an ad request failed.
+          onAdFailedToLoad: (LoadAdError error) {
+            debugPrint('InterstitialAd failed to load: $error');
+          },
+        ));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadBannerAd();
+    loadInterstitialAd();
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -93,7 +150,7 @@ class _MainScreenState extends State<MainScreen> {
               height: 10,
             ),
             SizedBox(
-              height: size.height * .25,
+              height: size.height * .23,
               child: Row(
                 children: [
                   SizedBox(
@@ -189,6 +246,7 @@ class _MainScreenState extends State<MainScreen> {
                           controller: weightController,
                           onChanged: (_) {
                             calculateBMI();
+                            interstitialAd!.show();
                           },
                           keyboardType: TextInputType.number,
                           textAlign: TextAlign.center,
@@ -223,8 +281,8 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ),
             SizedBox(
-              height: size.height * .35,
-              width: size.height * .35,
+              height: size.height * .30,
+              width: size.height * .30,
               child: SfRadialGauge(
                 axes: <RadialAxis>[
                   RadialAxis(
@@ -353,7 +411,18 @@ class _MainScreenState extends State<MainScreen> {
             BMIMarker(
                 isExactResult: bmiResult == "Obese Class III",
                 result: "Obese Class III",
-                range: "\>=40"),
+                range: ">=40"),
+            if (_bannerAd != null)
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: SafeArea(
+                  child: SizedBox(
+                    width: _bannerAd!.size.width.toDouble(),
+                    height: _bannerAd!.size.height.toDouble(),
+                    child: AdWidget(ad: _bannerAd!),
+                  ),
+                ),
+              )
           ],
         ),
       ),
