@@ -125,7 +125,6 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        leading: IconButton(onPressed: () {}, icon: const Icon(Icons.settings)),
         actions: [
           IconButton(
               onPressed: () {
@@ -240,20 +239,23 @@ class _MainScreenState extends State<MainScreen> {
                             thickness: 1,
                           ),
                         ),
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 10),
                         const Text("Weight"),
-                        TextFormField(
-                          controller: weightController,
-                          onChanged: (_) {
-                            calculateBMI();
-                            interstitialAd!.show();
-                          },
-                          keyboardType: TextInputType.number,
-                          textAlign: TextAlign.center,
-                          style:
-                              const TextStyle(decoration: TextDecoration.none),
-                          decoration:
-                              const InputDecoration(border: InputBorder.none),
+                        Expanded(
+                          flex: 1,
+                          child: TextFormField(
+                            controller: weightController,
+                            onChanged: (_) {
+                              calculateBMI();
+                              interstitialAd!.show();
+                            },
+                            keyboardType: TextInputType.number,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                decoration: TextDecoration.none),
+                            decoration:
+                                const InputDecoration(border: InputBorder.none),
+                          ),
                         ),
                         const Padding(
                           padding: EdgeInsets.only(right: 20, left: 20),
